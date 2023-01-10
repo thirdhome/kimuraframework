@@ -23,6 +23,7 @@ module Kimurai::BrowserBuilder
       Capybara.register_driver :selenium_chrome do |app|
         # Create driver options
         opts = { args: %w[--disable-gpu --no-sandbox --disable-translate] }
+        service_args = []
 
         # Provide custom chrome browser path:
         if chrome_path = Kimurai.configuration.selenium_chrome_path
@@ -109,8 +110,15 @@ module Kimurai::BrowserBuilder
           end
         end
 
+        # Verbose logging to file
+        if chrome_logging_path = @config[:chrome_logging_path]
+          logger.debug "BrowserBuilder (selenium_chrome): enabled verbose logging to #{chrome_logging_path}"
+          service_args << '--verbose'
+          service_args << "--log-path=#{chrome_logging_path}"
+        end
+
         chromedriver_path = Kimurai.configuration.chromedriver_path || "/usr/local/bin/chromedriver"
-        service = Selenium::WebDriver::Service.chrome(path: chromedriver_path)
+        service = Selenium::WebDriver::Service.chrome(path: chromedriver_path, args: service_args)
         Capybara::Selenium::Driver.new(app, browser: :chrome, options: driver_options, service: service)
       end
 
