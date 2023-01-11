@@ -112,9 +112,14 @@ module Kimurai::BrowserBuilder
 
         # Verbose logging to file
         if chrome_logging_path = @config[:chrome_logging_path]
-          logger.debug "BrowserBuilder (selenium_chrome): enabled verbose logging to #{chrome_logging_path}"
-          service_args << '--verbose'
-          service_args << "--log-path=#{chrome_logging_path}"
+          if File.directory?(chrome_logging_path)
+            log_file_path = chrome_logging_path.join("chromium_#{Time.current.strftime('%m_%e_%y_%H_%M_%S')}.log")
+            logger.debug "BrowserBuilder (selenium_chrome): enabled verbose logging to #{log_file_path}"
+            service_args << '--verbose'
+            service_args << "--log-path=#{log_file_path}"
+          else
+            logger.error 'BrowserBuilder (selenium_chrome): :chrome_logging_path must be an existing directory'
+          end
         end
 
         chromedriver_path = Kimurai.configuration.chromedriver_path || "/usr/local/bin/chromedriver"
